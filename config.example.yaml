@@ -1,0 +1,205 @@
+# =====================================================================
+# GPT_BRIDGE — cấu hình MẪU (đã che toàn bộ giá trị thật)
+#
+# Cách dùng:
+#   1. copy config.example.yaml -> config.yaml
+#   2. điền giá trị THẬT của máy bạn (config.yaml đã nằm trong .gitignore,
+#      TUYỆT ĐỐI không commit)
+#   3. .\start.ps1 -Doctor để kiểm tra môi trường
+#
+# Mọi giá trị dưới đây là giả định — phải đo lại thật trên Drive/Sheets
+# của bạn, không sửa thành số suy đoán.
+# =====================================================================
+app:
+  name: GPT_BRIDGE
+  version: "1.0"
+  timezone: Asia/Ho_Chi_Minh
+  log_level: INFO
+  stop_file: temp/STOP            # tạo file này (hoặc `bridge.py stop`) để dừng an toàn
+  state_db: jobs/bridge.db
+  heartbeat_file: logs/heartbeat.json
+
+credentials:
+  # OAuth (tài khoản Drive đã cấp quyền) — dùng cho Drive
+  oauth_client: C:\duong\dan\credentials.json
+  oauth_token: C:\duong\dan\token.json
+  # Service account — dùng cho Google Sheets (read-only ở V1)
+  service_account: C:\duong\dan\google-sheets-key.json
+  drive_account_note: "tài khoản sở hữu token.json"
+
+drive:
+  scopes:
+    - https://www.googleapis.com/auth/drive
+  retry:
+    attempts: 4
+    base_sleep: 3
+    max_sleep: 45
+  max_download_mb: 200
+  input_folder_name: INPUT
+  output_folder_name: OUTPUT
+  # Folder gốc chứa các folder tập — ĐO THẬT bằng API rồi điền
+  inbox_folder_id: <DRIVE_FOLDER_ID>
+  inbox_folder_name: 01_INBOX
+  # Tên folder tập: N-ep17_v01 / L-ep27_v04 / M-ep18_v04
+  episode_folder_pattern: "^(?P<lane>[A-Za-z]+)-ep(?P<ep>\\d+)_v(?P<ver>\\d+)$"
+  # BẮT BUỘC: luôn resolve INPUT/OUTPUT bằng API từ folder của tập.
+  # TUYỆT ĐỐI không ghép chuỗi "/input" vào link Drive.
+
+sheets:
+  scan_interval_seconds: 60
+  scan_range: A1:M3000
+  # Bản đồ cột (A=STT, B=NỘI DUNG, C=FOLDER, K=GHI CHÚ)
+  columns:
+    episode_number: A       # '17'
+    title: B                # 'ep17-... — Gốc: ...'
+    local_folder: C          # đường dẫn thư mục cục bộ của tập
+    request: K               # nhật ký trạng thái + ghi chú
+  status_rules:
+    # Ghi chú cột K là NHẬT KÝ: dòng mới được chèn LÊN ĐẦU.
+    # => trạng thái hiện tại = dòng ĐẦU TIÊN có marker trạng thái.
+    latest_line_wins: true
+    need_script:            # -> tạo job
+      - "can kich ban"
+      - "can viet kich ban"
+      - "chua co kich ban"
+      - "can gpt viet kich ban"
+    script_done:            # -> bỏ qua (đã xong)
+      - "kich ban xong"
+      - "da co kich ban"
+      - "script done"
+      - "da giao gpt"
+  # Link trong ô K (nhãn ưu tiên) — dùng khi ô K CÓ link Drive.
+  link_labels:
+    zip: ["zip ho so", "zip", "ho so"]
+    folder: ["thu muc drive", "thu muc", "folder"]
+  # Nhận diện slug tập từ đường dẫn local cột C
+  local_path_pattern: "assets[\\\\/](?P<profile>[A-Za-z0-9_\\-]+)[\\\\/](?P<slug>ep(?P<ep>\\d+)-[A-Za-z0-9_\\-]+)"
+
+projects:
+  H2DEV:
+    enabled: true
+    spreadsheet_id: <SPREADSHEET_ID>
+    spreadsheet_title: YOUTUBE
+    sheet_name: Lane-N
+    sheet_id: 0
+    request_column: K
+    prompt_template: h2dev_script_writer.md
+    writer: GPT6
+    lane_prefix: N
+    profile: senior_korekara
+    output_naming: "Lane{lane}_tap{ep_num}_GPT6_SCRIPT_DELIVERY.zip"
+    job_id_pattern: "{project}-{lane}-{episode}-{writer}-v{version:02d}"
+
+  GEO:
+    enabled: false
+    spreadsheet_id: null
+    sheet_name: null
+    request_column: K
+    prompt_template: geo_writer.md
+    writer: GPT6
+
+  MG_STUDIO:
+    enabled: false
+    spreadsheet_id: null
+    sheet_name: null
+    request_column: K
+    prompt_template: mg_studio_writer.md
+    writer: GPT6
+
+writer:
+  # mock | manual | chatgpt_web | chatgpt_web_handoff | official_api | codex_cli
+  adapter: chatgpt_web_handoff
+  # auto  = adapter tự trả file (chatgpt_web / official_api / mock)
+  # manual = người thao tác, Hermes nhận file từ thư mục chờ
+  mode: manual
+  chatgpt_web:
+    cdp_port: 9335
+    profile_dir: C:\duong\dan\CHATGPT_PROFILE
+    chrome_exe: C:\Program Files\Google\Chrome\Application\chrome.exe
+    model: gpt-5-6
+    project_url: ""
+    # Cửa sổ đặt NGOÀI màn hình (không chiếm desktop, không kéo lên trước)
+    window_position: "-32000,-32000"
+    window_size: "1280,900"
+    allow_launch: false          # chỉ bật khi cho phép tự mở Chrome riêng
+    timeout_sec: 1800
+    poll_sec: 15
+    stable_sec: 3                # đứng yên + KHÔNG còn nút Stop mới coi là xong
+  manual:
+    inbox_dir: jobs/_inbox       # người dùng thả ZIP kết quả vào đây
+    timeout_hours: 48
+  official_api:
+    enabled: false
+    base_url: https://api.openai.com/v1
+    key_env: OPENAI_API_KEY      # khoá lấy từ BIẾN MÔI TRƯỜNG, không ghi vào file
+    model: gpt-6
+  codex_cli:
+    executable: codex            # hoặc đường dẫn tuyệt đối tới codex.exe
+    model: gpt-6.1-sol
+    sandbox: read-only           # read-only = model không ghi/xoá/chạy được gì
+    timeout_sec: 2700            # 45 phút
+    allow_model_fallback: false
+    json_events: false           # true = log JSONL từng sự kiện
+    extra_args: []
+
+  # Writer = ChatGPT WEB trong ĐÚNG cuộc hội thoại chỉ định.
+  # BẮT BUỘC điền conversation_url trước khi dùng, nếu không adapter TỪ CHỐI
+  # nhận job (không tự mở chat mới).
+  # Token: chạy `python -m chatgpt_web_handoff.server` để chương trình in ra
+  # một token ngẫu nhiên, rồi dán vào Options của extension.
+  chatgpt_web_handoff:
+    conversation_url: "https://chatgpt.com/c/<CONVERSATION_ID>"
+    token: "<TOKEN_DO_SERVER_SINH_RA>"   # bí mật localhost — KHÔNG commit
+    server_host: 127.0.0.1        # chỉ loopback
+    server_port: 8765
+    server_url: http://127.0.0.1:8765
+    receive_dir: ""               # "" = thư mục Downloads của Windows
+    settle_sec: 1.5               # chờ file ghi xong trước khi QC
+    poll_sec: 3                   # chu kỳ quét thư mục nhận hàng
+
+qc:
+  required_files:
+    - SCRIPT_FINAL_JP.txt
+    - SCRIPT_QC_REPORT.md
+    - SCRIPT_ISSUES.md
+    - SCRIPT_STRUCTURE.md
+  optional_files:
+    - artifact_meta.json
+  script_file: SCRIPT_FINAL_JP.txt
+  char_count_exclude: ["\n", "\r", " ", "\u3000", "\t"]
+  max_uncompressed_mb: 200
+  max_files: 200
+  require_hook_verbatim: true
+  # Ngân sách độ dài: đọc từ 07_WRITING_TASK.md; đây chỉ là fallback
+  default_budget: {min: 0, target: 0, max: 0}
+
+upload:
+  verify_hash: true              # tải lại và so SHA-256
+  overwrite: false               # không ghi đè ZIP cũ
+  allow_mock_upload: false       # mock KHÔNG BAO GIỜ lên OUTPUT thật
+  # Folder Drive RIÊNG cho job SMOKE/TEST. Không đặt thì coordinator CHẶN
+  # (không fallback về OUTPUT sản xuất).
+  test_output_folder_id: "<DRIVE_FOLDER_ID>"
+  production_upload_enabled: false   # KHÔNG bật toàn hệ thống
+
+# Điều phối bàn giao tự động: HandoffStore(DOWNLOADED) -> QC -> Drive -> COMPLETED.
+# Phê duyệt theo TỪNG job (cờ trên bản ghi job), không bật ở mức hệ thống.
+handoff_coordinator:
+  poll_sec: 10
+  max_jobs_per_tick: 3
+  journal_name: handoff_journal.json
+  production_upload_enabled: false
+  test_output_folder_id: null        # để trống = dùng upload.test_output_folder_id
+
+# Adapter đầu ra bàn giao (chỉ ghi trong sandbox; KHÔNG sửa dự án đích)
+delivery:
+  sandbox_dir: jobs/_delivery
+  h2dev_root: <DUONG_DAN_DU_AN_DICH>
+  production_root: <DUONG_DAN_DU_AN_DICH>/assets
+  allow_production_write: false      # ghi vào assets/ phải được phê duyệt
+  script_lock_probe: true
+
+limits:
+  max_attempts: 3
+  unknown_submit_grace_sec: 120  # quá mốc này mà không rõ GPT đã nhận job => BLOCKED
+  max_prompt_chars_inline: 6000  # dài hơn => gửi bằng file đính kèm

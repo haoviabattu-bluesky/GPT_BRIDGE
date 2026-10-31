@@ -1,0 +1,12 @@
+google-api-python-client>=2.100
+google-auth>=2.23
+google-auth-oauthlib>=1.1
+google-auth-httplib2>=0.1
+PyYAML>=6.0
+requests>=2.31
+
+# adapter ChatGPT Web (tuỳ chọn — CHỈ dùng khi đã kiểm chứng)
+playwright>=1.40
+
+# test
+pytest>=7.4

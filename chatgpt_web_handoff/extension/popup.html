@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<title>GPT_BRIDGE Handoff</title>
+<style>
+  :root { color-scheme: dark; }
+  body { width: 380px; margin: 0; padding: 12px;
+         font: 13px/1.45 system-ui, -apple-system, Segoe UI, sans-serif;
+         background: #0f1115; color: #e6e8ee; }
+  h1 { font-size: 14px; margin: 0 0 8px; letter-spacing: .2px; }
+  .row { display: flex; gap: 6px; margin-bottom: 8px; }
+  button { flex: 1; padding: 7px 9px; border-radius: 7px; cursor: pointer;
+           border: 1px solid #2b303b; background: #1a1f29; color: #e6e8ee;
+           font-size: 12.5px; }
+  button:hover { background: #232936; }
+  button.primary { background: #1f6feb; border-color: #1f6feb; color: #fff; font-weight: 600; }
+  button.primary:hover { background: #2b7cf5; }
+  button:disabled { opacity: .45; cursor: not-allowed; }
+  #status { font-size: 11.5px; color: #8b93a7; margin-bottom: 8px; min-height: 15px; }
+  #status.err { color: #ff7b72; }
+  .job { border: 1px solid #232936; border-radius: 8px; padding: 9px;
+         margin-bottom: 8px; background: #141922; }
+  .job.active { border-color: #1f6feb; }
+  .jid { font-weight: 700; font-size: 12.5px; }
+  .meta { font-size: 11.5px; color: #8b93a7; margin-top: 2px; }
+  .state { display: inline-block; font-size: 10.5px; padding: 1px 6px;
+           border-radius: 999px; background: #232936; color: #b7bfd0; margin-left: 4px; }
+  .state.QUEUED { background: #3a2d10; color: #f0c674; }
+  .state.OPENED { background: #10303a; color: #7cd6f5; }
+  .state.SENT { background: #103a2a; color: #7cf5b0; }
+  .state.DOWNLOADED, .state.COMPLETED { background: #14361f; color: #8ce99a; }
+  .state.FAILED { background: #3a1414; color: #ff8f8f; }
+  .acts { display: flex; gap: 5px; margin-top: 7px; }
+  .acts button { font-size: 11.5px; padding: 5px 7px; }
+  #prompt { width: 100%; box-sizing: border-box; height: 120px; resize: vertical;
+            background: #0b0e13; color: #d6dbe6; border: 1px solid #232936;
+            border-radius: 7px; padding: 8px; font: 11.5px/1.4 ui-monospace, monospace; }
+  .hint { font-size: 11px; color: #6f7789; margin-top: 6px; }
+  a { color: #6cb6ff; }
+</style>
+</head>
+<body>
+  <h1>GPT_BRIDGE · bàn giao ChatGPT Web</h1>
+  <div id="status">đang kết nối…</div>
+
+  <div class="row">
+    <button id="refresh">Tải lại job</button>
+    <button id="opts">Cấu hình</button>
+  </div>
+
+  <div id="jobs"></div>
+
+  <textarea id="prompt" readonly placeholder="Chọn một job để xem prompt…"></textarea>
+  <div class="row" style="margin-top:8px">
+    <button id="copy">Sao chép prompt</button>
+    <button id="open">Mở đúng chat</button>
+    <button id="sent">Tôi đã gửi</button>
+  </div>
+  <div class="hint">
+    Extension KHÔNG tự gửi. Bạn dán prompt vào đúng cuộc hội thoại rồi bấm gửi,
+    sau đó bấm "Tôi đã gửi" để Hermes biết mà chờ ZIP kết quả.
+    ZIP kết quả: tải bằng nút tải xuống của ChatGPT — GPT_BRIDGE tự nhận.
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

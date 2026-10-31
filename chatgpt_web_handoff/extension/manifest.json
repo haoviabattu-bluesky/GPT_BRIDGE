@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "GPT_BRIDGE Handoff",
+  "version": "5.0.0",
+  "description": "Hiển thị job bàn giao từ Hermes, mở ĐÚNG cuộc hội thoại ChatGPT đã cấu hình, và sao chép prompt. Không tự gửi, không đọc nội dung hội thoại.",
+  "minimum_chrome_version": "116",
+  "permissions": ["storage", "tabs", "clipboardWrite"],
+  "host_permissions": [
+    "http://127.0.0.1/*",
+    "https://chatgpt.com/*",
+    "https://chat.openai.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_title": "GPT_BRIDGE Handoff",
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": ["https://chatgpt.com/*", "https://chat.openai.com/*"],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

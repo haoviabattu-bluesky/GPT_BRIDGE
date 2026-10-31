@@ -1,0 +1,65 @@
+# ============================================================
+# Không đưa lên GitHub: cấu hình thật, dữ liệu chạy, bí mật
+# ============================================================
+
+# --- Môi trường Python ---
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# --- CẤU HÌNH THẬT (chứa token + ID Drive/Sheet) ---
+# Bản mẫu an toàn: config.example.yaml
+config.yaml
+config.local.yaml
+.env
+.env.*
+*.env
+
+# --- Thông tin xác thực Google / khoá riêng ---
+credentials.json
+token.json
+*credentials*.json
+*service*account*.json
+*service*key*.json
+*.pem
+*.key
+*.p12
+*.pfx
+secrets.json
+
+# --- Dữ liệu chạy: chứa nội dung thật + email khách + link hội thoại ---
+jobs/
+logs/
+temp/
+quarantine/
+scratch_analysis/
+agent_loop/jobs/
+agent_loop/test_runs/
+jobs/_delivery/
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+*.log
+*.zip
+*.out
+
+# --- Bản sao lưu cục bộ trước khi che dữ liệu ---
+.local_backup/
+*.bak
+*.orig
+
+# --- Hệ điều hành / trình soạn thảo ---
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/
+
+# Mã nguồn bên thứ ba (chỉ để đọc tham chiếu, không import)
+vendor/
