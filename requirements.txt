@@ -10,3 +10,5 @@ playwright>=1.40
 
 # test
 pytest>=7.4
+# `tests/test_executor_v2.py` gọi mg.py của MG_STUDIO, mà core/khoa_tap.py cần psutil
+psutil>=5.9

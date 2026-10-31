@@ -64,6 +64,17 @@ Hermes: resume -> QC -> upload OUTPUT -> verify -> COMPLETED  (tự động)
 Phần **sau khi có ZIP là tự động**. Phần **giao/nhận với ChatGPT là thủ công** — đây là
 mức tự động thật của V1.
 
+## Kiểm thử
+
+```powershell
+# Phải ĐÓNG Chrome kiểm thử ở cổng 9335 trước (nhóm TestChatGPTWebGuards
+# giả định cổng đóng). Chỉ tắt tiến trình có --user-data-dir=...\CHATGPT_PROFILE.
+$env:PYTHONPATH=''; .venv\Scripts\python.exe -m pytest tests\ -q
+```
+
+`tests/test_executor_v2.py` là nghiệm thu tích hợp: nó gọi `mg.py` của dự án MG_STUDIO
+nên cần đường dẫn `E:\CLAUDE\YOUTUBE\MG_STUDIO` tồn tại trên máy.
+
 ## Tài liệu
 
 | File | Nội dung |
